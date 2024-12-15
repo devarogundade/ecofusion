@@ -69,20 +69,20 @@ const submit = async () => {
 
     submitting.value = true;
 
-    const imageUrl = await Storage.awaitUpload(form.value.image, form.value.name);
-    if (imageUrl == '') {
-        toast.error('Failed to upload image');
-        submitting.value = false;
-        return;
-    }
-
-    const projectId = Math.floor(Math.random() * 1_000_000) + 1;
+    const projectId = Math.floor(Math.random() * 1_000_000_000) + 1;
 
     const hash = await registerAProject(
         projectId,
         form.value.donationMax,
         { name: form.value.name }
     );
+
+    const imageUrl = await Storage.awaitUpload(form.value.image, form.value.name);
+    if (imageUrl == '') {
+        toast.error('Failed to upload image');
+        submitting.value = false;
+        return;
+    }
 
     if (hash) {
         await newProject({
