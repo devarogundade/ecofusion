@@ -185,17 +185,16 @@ const sell = async () => {
     //     ]
     // );
 
-    console.log(selectedReserve.value.address);
-
     await walletConnectWallet.approveToken(
         TokenId.fromString(selectedResource.value.token),
-        ContractId.fromEvmAddress(0, 0, `0x${selectedReserve.value.address}`),
-        form.value.units
+        ContractId.fromString("0.0.5276381"),
+        form.value.units * 10 ** 2
     );
 
     const hash = await addLiquidity(
-        ContractId.fromEvmAddress(0, 0, selectedReserve.value.address),
-        form.value.units
+        // `0x${selectedReserve.value.address}`,
+        ContractId.fromString("0.0.5276381"),
+        form.value.units * 10 ** 2
     );
 
     if (hash) {
