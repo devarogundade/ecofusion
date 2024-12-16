@@ -1,4 +1,11 @@
-import { AccountId, ContractId, TokenId, TransactionId } from "@hashgraph/sdk";
+import {
+  AccountId,
+  ContractFunctionResult,
+  ContractId,
+  Hbar,
+  TokenId,
+  TransactionId,
+} from "@hashgraph/sdk";
 import { ContractFunctionParameterBuilder } from "./contract-function-parameter-builder";
 
 export interface WalletInterface {
@@ -7,8 +14,11 @@ export interface WalletInterface {
     functionName: string,
     functionParameters: ContractFunctionParameterBuilder,
     gasLimit: number,
-    payableAmount?: number
-  ) => Promise<TransactionId | string | null>;
+    payableAmount: Hbar
+  ) => Promise<{
+    hash: TransactionId | string | null;
+    result: ContractFunctionResult | null;
+  }>;
 
   disconnect: () => void;
 

@@ -1,4 +1,9 @@
-import type { ContractId, TransactionId } from "@hashgraph/sdk";
+import {
+  Hbar,
+  type ContractFunctionResult,
+  type ContractId,
+  type TransactionId,
+} from "@hashgraph/sdk";
 import { walletConnectWallet } from "./wallet-connect-client";
 import { ContractFunctionParameterBuilder } from "./contract-function-parameter-builder";
 import { GAS_LIMIT_CONTRACT_CALL } from "./constants";
@@ -6,9 +11,12 @@ import type { ArtisanMetadata, FirmMetadata, ProjectMetadata } from "@/types";
 import { ecoFusionId } from "./data";
 
 export const initReserve = async (
-  resource: ContractId | string,
+  resource: string,
   price: number
-): Promise<TransactionId | null> => {
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       ecoFusionId,
@@ -24,10 +32,15 @@ export const initReserve = async (
           name: "price",
           value: price,
         }),
-      GAS_LIMIT_CONTRACT_CALL
+      GAS_LIMIT_CONTRACT_CALL,
+      new Hbar(10),
+      true
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };
 
@@ -35,7 +48,10 @@ export const trade = async (
   resource: ContractId | string,
   price: number,
   units: number
-): Promise<TransactionId | null> => {
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       ecoFusionId,
@@ -59,13 +75,45 @@ export const trade = async (
       GAS_LIMIT_CONTRACT_CALL
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
+  }
+};
+
+export const mintToken = async (
+  resource: ContractId | string,
+  amount: number
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
+  try {
+    return walletConnectWallet.executeContractFunction(
+      resource,
+      "mint",
+      new ContractFunctionParameterBuilder().addParam({
+        type: "uint256",
+        name: "amount",
+        value: amount,
+      }),
+      GAS_LIMIT_CONTRACT_CALL
+    );
+  } catch (error) {
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };
 
 export const registerAsFirm = async (
   metadata: FirmMetadata
-): Promise<TransactionId | null> => {
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       ecoFusionId,
@@ -78,13 +126,19 @@ export const registerAsFirm = async (
       GAS_LIMIT_CONTRACT_CALL
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };
 
 export const registerAsArtisan = async (
   metadata: ArtisanMetadata
-): Promise<TransactionId | null> => {
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       ecoFusionId,
@@ -97,7 +151,10 @@ export const registerAsArtisan = async (
       GAS_LIMIT_CONTRACT_CALL
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };
 
@@ -105,7 +162,10 @@ export const registerAProject = async (
   projectId: number,
   donationMax: number,
   metadata: ProjectMetadata
-): Promise<TransactionId | null> => {
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       ecoFusionId,
@@ -129,14 +189,21 @@ export const registerAProject = async (
       GAS_LIMIT_CONTRACT_CALL
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };
 
 export const donateToProject = async (
   projectId: number,
-  payableAmount: number
-): Promise<TransactionId | null> => {
+  payableAmount: Hbar,
+  memo: string
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       ecoFusionId,
@@ -147,17 +214,25 @@ export const donateToProject = async (
         value: projectId,
       }),
       GAS_LIMIT_CONTRACT_CALL,
-      payableAmount
+      payableAmount,
+      false,
+      memo
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };
 
 export const withdrawFromProject = async (
   projectId: number,
   amount: number
-): Promise<TransactionId | null> => {
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       ecoFusionId,
@@ -176,14 +251,20 @@ export const withdrawFromProject = async (
       GAS_LIMIT_CONTRACT_CALL
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };
 
 export const addLiquidity = async (
   reserve: ContractId | string,
   units: number
-): Promise<TransactionId | null> => {
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       reserve,
@@ -196,14 +277,20 @@ export const addLiquidity = async (
       GAS_LIMIT_CONTRACT_CALL
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };
 
 export const removeLiquidity = async (
   reserve: ContractId | string,
   lpAmount: number
-): Promise<TransactionId | null> => {
+): Promise<{
+  hash: TransactionId | null;
+  result: ContractFunctionResult | null;
+}> => {
   try {
     return walletConnectWallet.executeContractFunction(
       reserve,
@@ -216,6 +303,9 @@ export const removeLiquidity = async (
       GAS_LIMIT_CONTRACT_CALL
     );
   } catch (error) {
-    return null;
+    return {
+      hash: null,
+      result: null,
+    };
   }
 };

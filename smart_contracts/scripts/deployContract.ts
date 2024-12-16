@@ -28,8 +28,8 @@ const deployContract = async (): Promise<DeployResult | null> => {
   console.log("plasticReceipt", plasticReceipt?.contractAddress);
   console.log("rubberReceipt", rubberReceipt?.contractAddress);
 
-  await plasticResource.mint(ethers.parseUnits("100", 2), wallet.address);
-  await rubberResource.mint(ethers.parseUnits("100", 2), wallet.address);
+  await plasticResource.mint(ethers.parseUnits("100", 2));
+  await rubberResource.mint(ethers.parseUnits("100", 2));
 
   if (!plasticReceipt || !plasticReceipt.contractAddress) return null;
   if (!rubberReceipt || !rubberReceipt.contractAddress) return null;

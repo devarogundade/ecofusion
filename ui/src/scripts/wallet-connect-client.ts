@@ -6,7 +6,9 @@ import {
   ContractCallQuery,
   ContractExecuteTransaction,
   ContractId,
+  Hbar,
   LedgerId,
+  PrivateKey,
   TokenAssociateTransaction,
   TokenId,
   TransferTransaction,
@@ -27,7 +29,12 @@ const refreshEvent = new EventEmitter();
 const walletConnectProjectId = import.meta.env.VITE_PROJECT_ID;
 const currentNetworkConfig = appConfig.networks.testnet;
 const hederaNetwork = currentNetworkConfig.network;
-const hederaClient = Client.forName(hederaNetwork);
+
+export const hederaClient = Client.forTestnet();
+hederaClient.setOperator(
+  import.meta.env.VITE_OPERATOR_ID,
+  PrivateKey.fromStringECDSA(import.meta.env.VITE_OPERATOR_KEY!)
+);
 
 const metadata = {
   name: "EcoFusion",
@@ -154,18 +161,37 @@ class WalletConnectWallet implements WalletInterface {
     functionName: string,
     functionParameters: ContractFunctionParameterBuilder,
     gasLimit: number,
-    payableAmount: number = 0
+    payableAmount: Hbar = new Hbar(0),
+    hasResult: boolean = false,
+    memo: string = ""
   ) {
-    const tx = new ContractExecuteTransaction()
-      .setContractId(contractId)
-      .setGas(gasLimit)
-      .setPayableAmount(payableAmount)
-      .setFunction(functionName, functionParameters.buildHAPIParams());
+    try {
+      const tx = new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(gasLimit)
+        .setPayableAmount(payableAmount)
+        .setTransactionMemo(memo)
+        .setFunction(functionName, functionParameters.buildHAPIParams());
 
-    const signer = this.getSigner();
-    await tx.freezeWithSigner(signer);
-    const txResult = await tx.executeWithSigner(signer);
-    return txResult ? txResult.transactionId : null;
+      const signer = this.getSigner();
+      await tx.freezeWithSigner(signer);
+      const txResult = await tx.executeWithSigner(signer);
+
+      console.log("txResult", txResult);
+
+      const record = hasResult ? await txResult.getRecord(hederaClient) : null;
+
+      return {
+        hash: txResult ? txResult.transactionId : null,
+        result: record ? record.contractFunctionResult : null,
+      };
+    } catch (error) {
+      console.log("ContractExecuteTransaction error:", error);
+      return {
+        hash: null,
+        result: null,
+      };
+    }
   }
 
   async viewContractFunction(

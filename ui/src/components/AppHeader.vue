@@ -2,8 +2,11 @@
 import Button from '@/components/Button.vue';
 import EcoFusionLogo from '@/components/icons/EcoFusionLogo.vue';
 import { useWalletConnect } from '@/scripts/wallet-connect-client';
+import { useAccountStore } from '@/stores/account';
+import { AccountType } from '@/types';
 
 const walletConnect = useWalletConnect();
+const accountStore = useAccountStore();
 </script>
 
 <template>
@@ -18,6 +21,11 @@ const walletConnect = useWalletConnect();
                     <RouterLink to="/">Home</RouterLink>
                     <RouterLink to="/marketplace">Market Place</RouterLink>
                     <RouterLink to="/projects">Projects</RouterLink>
+                    <RouterLink v-if="accountStore.account?.type === AccountType.Individual" to="/submission">New
+                        project
+                    </RouterLink>
+                    <RouterLink v-if="accountStore.account?.type === AccountType.Company" to="/new-reserve">New reserve
+                    </RouterLink>
                     <RouterLink to="/login" v-if="!walletConnect.state.isConnected">
                         <Button :text="'LOGIN'" />
                     </RouterLink>

@@ -3,7 +3,7 @@ import Button from '@/components/Button.vue';
 import { allResources, newReserve } from '@/scripts/data';
 import { useWalletConnect } from '@/scripts/wallet-connect-client';
 import { useToast } from 'vue-toast-notification';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { initReserve } from '@/scripts/hedera';
 
@@ -49,19 +49,19 @@ const createReserve = async () => {
 
     submitting.value = true;
 
-    const hash = await initReserve(
+    const { hash, result } = await initReserve(
         form.value.resource,
-        form.value.price
+        form.value.price,
     );
 
-    if (hash) {
+    if (hash && result && result.getAddress(0) && result.getAddress(1)) {
         await newReserve({
             name: form.value.name,
             price: form.value.price,
             resource: form.value.resource,
             units: 0,
-            address: "",
-            lpToken: ""
+            address: result?.getAddress(0),
+            lpToken: result?.getAddress(1)
         });
 
         toast.success('Resource created');
@@ -77,6 +77,12 @@ const createReserve = async () => {
 
     submitting.value = false;
 };
+
+onMounted(() => {
+    if (allResources().length > 0) {
+        form.value.resource = allResources()[0].address;
+    }
+});
 </script>
 
 <template>
@@ -104,7 +110,7 @@ const createReserve = async () => {
                     </div>
 
                     <div class="input">
-                        <label>Price (Hbar) *</label>
+                        <label>Price (Hbar) per Kg *</label>
                         <input type="number" v-model="form.price">
                     </div>
                 </div>

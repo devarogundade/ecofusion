@@ -32,22 +32,22 @@ const categories: Category[] = [
   { id: "technology", name: "Technology" },
 ];
 
-export const ecoFusionId: ContractId | string = "0.0.5270295";
+export const ecoFusionId: ContractId | string = "0.0.5276154";
 
 const resources: Resource[] = [
   {
     name: "Plastic",
     symbol: "PLS",
     image: "/images/plastic.png",
-    address: "0.0.5270287",
-    token: "0.0.5270288",
+    address: "0x479B14eAB9BebEDECb471dD0927A8Be846d5B85B",
+    token: "0.0.5276147",
   },
   {
     name: "Rubber",
     symbol: "RUB",
     image: "/images/rubber.png",
-    address: "0.0.5270291",
-    token: "0.0.5270292",
+    address: "0x6225eD9C29d15e740b65aDF5D0dEABacc32dd884",
+    token: "0.0.5276149",
   },
 ];
 

@@ -7,7 +7,7 @@ import "./libs/HederaTokenService.sol";
 import "./libs/ExpiryHelper.sol";
 import "./libs/KeyHelper.sol";
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "./libs/Ownable.sol";
 
 import {IReserve} from "./interfaces/IReserve.sol";
 import {IResource} from "./interfaces/IResource.sol";

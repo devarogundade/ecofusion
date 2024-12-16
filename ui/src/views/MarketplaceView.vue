@@ -5,11 +5,12 @@ import FlagIcon from '@/components/icons/FlagIcon.vue';
 import SearchIcon from '@/components/icons/SearchIcon.vue';
 import SwapIcon from '@/components/icons/SwapIcon.vue';
 import Message from '@/components/Message.vue';
-import { allReserves, allResources, allTransactions, ecoFusionId, newTransaction } from '@/scripts/data';
-import { addLiquidity, trade } from '@/scripts/hedera';
-import { useWalletConnect, walletConnectWallet } from '@/scripts/wallet-connect-client';
+import { allReserves, allResources, allTransactions, decrementUnits, ecoFusionId, incrementUnits, newTransaction } from '@/scripts/data';
+import { addLiquidity, trade, mintToken } from '@/scripts/hedera';
+import { hederaClient, useWalletConnect, walletConnectWallet } from '@/scripts/wallet-connect-client';
 import { useAccountStore } from '@/stores/account';
 import { AccountType, type Reserve, type Resource, type Transaction } from '@/types';
+import { AccountId, ContractId, TokenId } from '@hashgraph/sdk';
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toast-notification';
@@ -23,6 +24,7 @@ const selectedResource = ref<Resource | null>(null);
 const loading = ref(false);
 const buying = ref(false);
 const selling = ref(false);
+const minting = ref(false);
 
 const form = ref({
     units: 0
@@ -34,18 +36,57 @@ const toast = useToast({ duration: 4000, position: "top" });
 const onReserveChange = async (event: any) => {
     const value = event.target?.value;
     if (value) {
-        selectedReserve.value = event.target?.value;
+        const reserve = reserves.value.find(a => a.address == value);
+
+        if (!reserve) return router.push('/');
+
+        selectedReserve.value = reserve;
     }
 };
 
 const onResourceChange = async (event: any) => {
     const value = event.target?.value;
-    if (value) {
-        selectedResource.value = event.target?.value;
 
-        if (!selectedResource.value) return router.push('/');
+    if (value) {
+        const resource = allResources().find(a => a.address == value);
+        if (!resource) return router.push('/');
+
+        selectedResource.value = resource;
+
         reserves.value = await allReserves(selectedResource.value.address);
+
+        if (reserves.value.length > 0) selectedReserve.value = reserves.value[0];
     }
+};
+
+const mint = async () => {
+    if (walletConnect.state.accountId == '') {
+        toast.error('Please connect your wallet');
+        return;
+    }
+
+    if (!selectedResource.value) {
+        toast.error('Please select a resource');
+        return;
+    }
+
+    minting.value = true;
+
+    // await walletConnectWallet.associateTokens(
+    //     [TokenId.fromString(selectedResource.value.token)]
+    // );
+
+    const { hash } = await mintToken(
+        ContractId.fromEvmAddress(0, 0, selectedResource.value.address),
+        1_000_000);
+
+    if (hash) {
+        toast.success('Token minted');
+    } else {
+        toast.error('Something went wrong');
+    }
+
+    minting.value = false;
 };
 
 const buy = async () => {
@@ -71,7 +112,9 @@ const buy = async () => {
 
     buying.value = true;
 
-    await walletConnectWallet.associateToken(selectedResource.value.address);
+    await walletConnectWallet.associateTokens(
+        [TokenId.fromString(selectedResource.value.token)]
+    );
 
     await walletConnectWallet.approveToken(
         selectedResource.value.token,
@@ -95,6 +138,11 @@ const buy = async () => {
             uints: form.value.units,
             date: new Date(Date.now())
         });
+
+        await decrementUnits(
+            selectedReserve.value.address,
+            form.value.units
+        );
 
         form.value.units = 0;
 
@@ -130,18 +178,23 @@ const sell = async () => {
 
     selling.value = true;
 
-    await walletConnectWallet.associateTokens(
-        [selectedResource.value.token, selectedReserve.value.lpToken]
-    );
+    // await walletConnectWallet.associateTokens(
+    //     [
+    //         TokenId.fromString(selectedResource.value.token),
+    //         TokenId.fromSolidityAddress(selectedReserve.value.lpToken)
+    //     ]
+    // );
+
+    console.log(selectedReserve.value.address);
 
     await walletConnectWallet.approveToken(
-        selectedResource.value.address,
-        selectedReserve.value.address,
+        TokenId.fromString(selectedResource.value.token),
+        ContractId.fromEvmAddress(0, 0, `0x${selectedReserve.value.address}`),
         form.value.units
     );
 
     const hash = await addLiquidity(
-        selectedReserve.value.address,
+        ContractId.fromEvmAddress(0, 0, selectedReserve.value.address),
         form.value.units
     );
 
@@ -156,6 +209,11 @@ const sell = async () => {
             date: new Date(Date.now())
         });
 
+        await incrementUnits(
+            selectedReserve.value.address,
+            form.value.units
+        );
+
         form.value.units = 0;
 
         toast.success('Liquidity added successful!');
@@ -165,7 +223,6 @@ const sell = async () => {
 
     selling.value = false;
 };
-
 
 onMounted(async () => {
     loading.value = true;
@@ -198,7 +255,7 @@ watch(selectedResource, async () => {
             <div class="marketplace" v-else-if="accountStore.account && selectedReserve && selectedResource">
                 <div class="toolbar">
                     <select @change="onResourceChange">
-                        <option v-for="resource in allResources()" :value="resource">
+                        <option v-for="resource in allResources()" :value="resource.address">
                             {{ resource.name }} / Hbar
                         </option>
                     </select>
@@ -214,7 +271,7 @@ watch(selectedResource, async () => {
                         <div class="chart">
                             <div class="chart_header">
                                 <h3>
-                                    {{ selectedReserve.price }}Hbar/Kg
+                                    {{ selectedReserve.price }}Hbar per Kg
                                     <span>Available: {{ selectedReserve.units }}Kg</span>
                                 </h3>
 
@@ -283,7 +340,7 @@ watch(selectedResource, async () => {
                                 <RouterLink to="/new-reserve">
                                     <div class="tab" v-if="accountStore.account.type == AccountType.Company">
                                         <FlagIcon />
-                                        <p>New Reserve</p>
+                                        <p>New</p>
                                     </div>
                                 </RouterLink>
                             </div>
@@ -300,7 +357,7 @@ watch(selectedResource, async () => {
                                 <label>Quantity (Kg)</label>
                                 <input type="number" placeholder="Amount" v-model="form.units" />
 
-                                <label>Price (Hbar)</label>
+                                <label>Price (Hbar) per Kg</label>
                                 <input type="number" placeholder="Hbar" :value="selectedReserve.price" disabled />
 
                                 <Button :text="'Buy'" :loading="buying" @click="buy" />
@@ -311,17 +368,20 @@ watch(selectedResource, async () => {
 
                                 <select @change="onReserveChange">
                                     <option v-for="reserve in reserves" :value="reserve">
-                                        {{ reserve.name }} ({{ reserve.price }} Hbar) ~ {{ reserve.units }}kg
+                                        {{ reserve.name }} ({{ reserve.price }}Hbar) ~ {{ reserve.units }}kg
                                     </option>
                                 </select>
 
                                 <label>Quantity (Kg)</label>
                                 <input type="number" placeholder="Amount" v-model="form.units" />
 
-                                <label>Price (Hbar)</label>
-                                <input type="number" placeholder="Hbar" :value="selectedReserve.price" disabled />
+                                <label>Price (Hbar) per Kg</label>
+                                <input type="number" placeholder="Hbar" v-model="selectedReserve.price" disabled />
 
-                                <Button :text="'Sell'" :loading="selling" @click="sell" />
+                                <div class="buttons">
+                                    <Button :text="'Sell'" :loading="selling" @click="sell" />
+                                    <Button :text="'Mint'" :loading="minting" @click="mint" />
+                                </div>
                             </div>
                         </div>
 
@@ -330,36 +390,9 @@ watch(selectedResource, async () => {
                                 <h3>Reserves</h3>
                             </div>
 
-                            <div class="reserve">
-                                <p class="name">Veolia</p>
-                                <div class="store">
-                                    <p>60%</p>
-                                    <div class="bar"></div>
-                                </div>
-                            </div>
-
-                            <div class="reserve">
-                                <p class="name">Amcor</p>
-                                <div class="store">
-                                    <p>30%</p>
-                                    <div class="bar"></div>
-                                </div>
-                            </div>
-
-                            <div class="reserve">
-                                <p class="name">Plastrec</p>
-                                <div class="store">
-                                    <p>10%</p>
-                                    <div class="bar"></div>
-                                </div>
-                            </div>
-
-                            <div class="reserve">
-                                <p class="name">Others</p>
-                                <div class="store">
-                                    <p>10%</p>
-                                    <div class="bar"></div>
-                                </div>
+                            <div class="reserve" v-for="reserve in reserves" :key="reserve.address">
+                                <p class="name">{{ reserve.name }}</p>
+                                <p>{{ reserve.units }} Kg</p>
                             </div>
                         </div>
                     </div>
@@ -585,5 +618,29 @@ tbody td {
 
 .reserves {
     margin-top: 40px;
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px
+}
+
+.reserves_title {}
+
+.reserves_title h3 {
+    color: var(--tx-normal);
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.reserve {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--tx-dimmed);
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 10px;
 }
 </style>

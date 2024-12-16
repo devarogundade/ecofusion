@@ -7,7 +7,7 @@ import "./libs/HederaTokenService.sol";
 import "./libs/ExpiryHelper.sol";
 import "./libs/KeyHelper.sol";
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "./libs/Ownable.sol";
 
 import {IResource} from "./interfaces/IResource.sol";
 
@@ -58,7 +58,7 @@ contract Resource is
         _underlyingToken = createdToken;
     }
 
-    function mint(int64 amount, address to) external onlyOwner returns (int64) {
+    function mint(int64 amount) external returns (int64) {
         (int response, , ) = mintToken(
             _underlyingToken,
             amount,
@@ -69,7 +69,7 @@ contract Resource is
             revert("Failed to mint fungible token");
         }
 
-        transferToken(_underlyingToken, address(this), to, amount);
+        transferToken(_underlyingToken, address(this), msg.sender, amount);
 
         return amount;
     }

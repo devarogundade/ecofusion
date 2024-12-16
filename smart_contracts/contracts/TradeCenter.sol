@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import "./libs/HederaTokenService.sol";
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "./libs/Ownable.sol";
 
 import {Reserve} from "./Reserve.sol";
 import {IReserve} from "./interfaces/IReserve.sol";

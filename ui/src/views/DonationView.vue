@@ -8,6 +8,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { donateToProject } from '@/scripts/hedera';
 import type { Project } from '@/types';
 import Message from '@/components/Message.vue';
+import { Hbar } from '@hashgraph/sdk';
 
 const walletConnect = useWalletConnect();
 const toast = useToast({ duration: 4000, position: "top" });
@@ -45,7 +46,8 @@ const donate = async () => {
 
     const hash = await donateToProject(
         Number(route.params.id),
-        form.value.amount
+        new Hbar(form.value.amount),
+        form.value.message
     );
 
     if (hash) {

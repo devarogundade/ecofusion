@@ -70,6 +70,10 @@ const register = async () => {
 
     submitting.value = true;
 
+    const hash = form.value.type == AccountType.Individual ?
+        await registerAsArtisan({ name: form.value.name }) :
+        await registerAsFirm({ name: form.value.name });
+
     const imageUrl = await Storage.awaitUpload(form.value.image, form.value.name);
     if (imageUrl == '') {
         toast.error('Failed to upload image');
@@ -77,11 +81,15 @@ const register = async () => {
         return;
     }
 
-    const attachmentUrl = await Storage.awaitUpload(form.value.image, form.value.name);
-
-    const hash = form.value.type == AccountType.Individual ?
-        await registerAsArtisan({ name: form.value.name }) :
-        await registerAsFirm({ name: form.value.name });
+    let attachmentUrl = '';
+    if (form.value.attachment) {
+        attachmentUrl = await Storage.awaitUpload(form.value.attachment, `attachment_${form.value.name}`);
+        if (attachmentUrl == '') {
+            toast.error('Failed to upload attachment');
+            submitting.value = false;
+            return;
+        }
+    }
 
     if (hash) {
         await newAccount({

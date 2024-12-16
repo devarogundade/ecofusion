@@ -89,7 +89,7 @@ onMounted(async () => {
         <div class="discover">
           <p>Trade waste with industries for valuable resources that power innovations and build a sustainable future.
           </p>
-          <RouterLink to="/projects">
+          <RouterLink to="/marketplace">
             <button>
               <p>DISCOVER MARKET PLACE</p>
               <ArrowRightIcon />
