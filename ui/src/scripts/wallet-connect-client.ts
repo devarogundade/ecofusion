@@ -33,7 +33,7 @@ const hederaNetwork = currentNetworkConfig.network;
 export const hederaClient = Client.forTestnet();
 hederaClient.setOperator(
   import.meta.env.VITE_OPERATOR_ID,
-  PrivateKey.fromStringECDSA(import.meta.env.VITE_OPERATOR_KEY!)
+  PrivateKey.fromStringECDSA(import.meta.env.VITE_OPERATOR_KEY)
 );
 
 const metadata = {

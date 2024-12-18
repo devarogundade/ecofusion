@@ -112,6 +112,26 @@ export function allCategories(): Category[] {
   return categories;
 }
 
+export async function allAccounts(): Promise<Account[]> {
+  try {
+    const ref = collection(db, ACCOUNT_COLLECTION);
+
+    const q = query(ref);
+    const querySnapshot = await getDocs(q);
+
+    const accounts: Account[] = [];
+
+    querySnapshot.forEach((doc) => {
+      accounts.push(doc.data() as Account);
+    });
+
+    return accounts;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+}
+
 export async function allReserves(resource: string): Promise<Reserve[]> {
   try {
     const ref = collection(db, RESERVE_COLLECTION);

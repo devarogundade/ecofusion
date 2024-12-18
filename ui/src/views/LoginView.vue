@@ -2,29 +2,7 @@
 import CloseIcon from '@/components/icons/CloseIcon.vue';
 import WalletConnect from '@/components/icons/WalletConnect.vue';
 
-import { watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { useWalletConnect, openWalletConnectModal } from '@/scripts/wallet-connect-client';
-import { getAccount } from '@/scripts/data';
-import { useAccountStore } from '@/stores/account';
-
-const router = useRouter();
-const walletConnect = useWalletConnect();
-const accountStore = useAccountStore();
-
-watch(walletConnect.state, async (newState) => {
-    if (newState.isConnected) {
-        const account = await getAccount(newState.accountId);
-
-        if (account) {
-            router.push('/marketplace');
-        } else {
-            router.push('/register');
-        }
-
-        accountStore.setAccount(account);
-    }
-});
+import { openWalletConnectModal } from '@/scripts/wallet-connect-client';
 </script>
 
 <template>

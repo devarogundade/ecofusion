@@ -5,15 +5,18 @@ import FlagIcon from '@/components/icons/FlagIcon.vue';
 import SearchIcon from '@/components/icons/SearchIcon.vue';
 import SwapIcon from '@/components/icons/SwapIcon.vue';
 import Message from '@/components/Message.vue';
-import { allReserves, allResources, allTransactions, decrementUnits, ecoFusionId, incrementUnits, newTransaction } from '@/scripts/data';
-import { addLiquidity, trade, mintToken } from '@/scripts/hedera';
-import { hederaClient, useWalletConnect, walletConnectWallet } from '@/scripts/wallet-connect-client';
-import { useAccountStore } from '@/stores/account';
+
+import { allReserves, allResources, allTransactions, decrementUnits, incrementUnits, newTransaction } from '@/scripts/data';
+import { useWalletConnect, walletConnectWallet } from '@/scripts/wallet-connect-client';
 import { AccountType, type Reserve, type Resource, type Transaction } from '@/types';
-import { AccountId, ContractId, TokenId } from '@hashgraph/sdk';
+import { addLiquidity, trade, mintToken } from '@/scripts/hedera';
+import { MirrorNodeClient } from '@/scripts/mirror-node-client';
+import { networkConfig } from '@/scripts/networks';
+import { useAccountStore } from '@/stores/account';
+import { useToast } from 'vue-toast-notification';
+import { TokenId } from '@hashgraph/sdk';
 import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useToast } from 'vue-toast-notification';
 
 const router = useRouter();
 const accountStore = useAccountStore();
@@ -25,9 +28,11 @@ const loading = ref(false);
 const buying = ref(false);
 const selling = ref(false);
 const minting = ref(false);
+const mirrorNode = new MirrorNodeClient(networkConfig.testnet);
 
 const form = ref({
-    units: 0
+    units: 0,
+    associateToken: false
 });
 
 const walletConnect = useWalletConnect();
@@ -35,6 +40,7 @@ const toast = useToast({ duration: 4000, position: "top" });
 
 const onReserveChange = async (event: any) => {
     const value = event.target?.value;
+
     if (value) {
         const reserve = reserves.value.find(a => a.address == value);
 
@@ -72,13 +78,15 @@ const mint = async () => {
 
     minting.value = true;
 
-    await walletConnectWallet.associateTokens(
-        [TokenId.fromString(selectedResource.value.token)]
-    );
+    if (form.value.associateToken) {
+        await walletConnectWallet.associateTokens(
+            [TokenId.fromString(selectedResource.value.token)]
+        );
+    }
 
-    const { hash } = await mintToken(
-        ContractId.fromEvmAddress(0, 0, selectedResource.value.address),
-        1_000_000);
+    const resource = await mirrorNode.getAccountInfo(selectedResource.value.address);
+
+    const { hash } = await mintToken(resource.account, 1_000_000);
 
     if (hash) {
         toast.success('Token minted');
@@ -112,9 +120,11 @@ const buy = async () => {
 
     buying.value = true;
 
-    await walletConnectWallet.associateTokens(
-        [TokenId.fromString(selectedResource.value.token)]
-    );
+    if (form.value.associateToken) {
+        await walletConnectWallet.associateTokens(
+            [TokenId.fromString(selectedResource.value.token)]
+        );
+    }
 
     const { hash } = await trade(
         selectedReserve.value.address,
@@ -172,24 +182,23 @@ const sell = async () => {
 
     selling.value = true;
 
-    await walletConnectWallet.associateTokens(
-        [
-            TokenId.fromString(selectedResource.value.token),
-            TokenId.fromSolidityAddress(selectedReserve.value.lpToken)
-        ]
-    );
+    if (form.value.associateToken) {
+        await walletConnectWallet.associateTokens(
+            [
+                TokenId.fromSolidityAddress(selectedReserve.value.lpToken)
+            ]
+        );
+    }
+
+    const reserve = await mirrorNode.getAccountInfo(selectedReserve.value.address);
 
     await walletConnectWallet.approveToken(
         TokenId.fromString(selectedResource.value.token),
-        ContractId.fromString("0.0.5276381"),
+        reserve.account,
         form.value.units * 10 ** 2
     );
 
-    const { hash } = await addLiquidity(
-        // `0x${selectedReserve.value.address}`,
-        ContractId.fromString("0.0.5276381"),
-        form.value.units * 10 ** 2
-    );
+    const { hash } = await addLiquidity(reserve.account, form.value.units * 10 ** 2);
 
     if (hash) {
         newTransaction({
@@ -326,6 +335,11 @@ watch(selectedReserve, async () => {
                     </div>
 
                     <div class="trade_action">
+                        <div class="ass_token">
+                            <label for="">First time? associate tokens</label>
+                            <input type="checkbox" v-model="form.associateToken" value="Associate token">
+                        </div>
+
                         <div class="swap">
                             <div class="tabs">
                                 <div class="tab tab_active">
@@ -362,7 +376,7 @@ watch(selectedReserve, async () => {
                                 <label>Select a reserve</label>
 
                                 <select @change="onReserveChange">
-                                    <option v-for="reserve in reserves" :value="reserve">
+                                    <option v-for="reserve in reserves" :value="reserve.address">
                                         {{ reserve.name }} ({{ reserve.price }}Hbar) ~ {{ reserve.units }}kg
                                     </option>
                                 </select>
@@ -543,6 +557,19 @@ option {
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
     padding: 20px;
     height: fit-content;
+}
+
+.ass_token {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.ass_token label {
+    color: #ABB0A8;
+    text-wrap: nowrap;
 }
 
 .swap {

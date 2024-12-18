@@ -7,6 +7,16 @@ import { getAnalytics } from "firebase/analytics";
 import 'vue-toast-notification/dist/theme-sugar.css';
 import AppFooter from './components/AppFooter.vue';
 
+import { useAccountStore } from '@/stores/account';
+import { useWalletConnect } from '@/scripts/wallet-connect-client';
+import { getAccount } from '@/scripts/data';
+import { watch } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const walletConnect = useWalletConnect();
+const accountStore = useAccountStore();
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FS_API_KEY,
   authDomain: import.meta.env.VITE_FS_AUTH_DOMAIN,
@@ -20,6 +30,20 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 getAnalytics(app);
+
+watch(walletConnect.state, async (newState) => {
+  if (newState.isConnected) {
+    const account = await getAccount(newState.accountId);
+
+    if (account) {
+      router.push('/marketplace');
+    } else {
+      router.push('/register');
+    }
+
+    accountStore.setAccount(account);
+  }
+});
 </script>
 
 <template>

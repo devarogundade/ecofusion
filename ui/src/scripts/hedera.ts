@@ -89,7 +89,7 @@ export const mintToken = async (
       resource,
       "mint",
       new ContractFunctionParameterBuilder().addParam({
-        type: "uint256",
+        type: "int64",
         name: "amount",
         value: amount,
       }),

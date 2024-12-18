@@ -163,6 +163,19 @@ onMounted(async () => {
         <Swiper :modules="modules" :slides-per-view="3.2" :space-between="30" navigation>
           <SwiperSlide>
             <div class="testimony">
+              <p class="text">Our small recycling project gained global visibility and funding to expand. Amazing
+                opportunities. </p>
+              <div class="user">
+                <img src="../assets/images/testimony_image_4.png" alt="">
+                <div class="user_name">
+                  <p>Rebecca</p>
+                  <p>Ghana</p>
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
+          <SwiperSlide>
+            <div class="testimony">
               <p class="text">We repurposed industrial soot into sustainable ink, thanks to the changemakers we met
                 here!
               </p>
@@ -200,19 +213,6 @@ onMounted(async () => {
                 <div class="user_name">
                   <p>Cheng</p>
                   <p>China</p>
-                </div>
-              </div>
-            </div>
-          </SwiperSlide>
-          <SwiperSlide>
-            <div class="testimony">
-              <p class="text">Our small recycling project gained global visibility and funding to expand. Amazing
-                opportunities. </p>
-              <div class="user">
-                <img src="../assets/images/testimony_image_4.png" alt="">
-                <div class="user_name">
-                  <p>Rebecca</p>
-                  <p>Ghana</p>
                 </div>
               </div>
             </div>
