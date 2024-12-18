@@ -1,4 +1,3 @@
-import { Reserve } from "./../../../smart_contracts/typechain-types/Reserve";
 import {
   Hbar,
   type ContractFunctionResult,
