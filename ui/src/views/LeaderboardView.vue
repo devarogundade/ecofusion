@@ -30,10 +30,26 @@ onMounted(async () => {
                         <h3>{{ accountStore.account.name }}</h3>
                         <p>{{ accountStore.account.address }}</p>
                     </div>
+
+                    <div class="accounts">
+                        <div class="account" v-for="account in accounts">
+                            <img :src="account.image" alt="">
+                            <p>{{ account.name }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+div {
+    color: var(--tx-normal);
+    margin-bottom: 30px;
+}
+
+img {
+    border-radius: 50%;
+}
+</style>
