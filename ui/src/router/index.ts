@@ -40,8 +40,8 @@ const router = createRouter({
       component: SubmitView,
     },
     {
-      path: "/leadership",
-      name: "leadership",
+      path: "/leaderboard",
+      name: "leaderboard",
       component: LeaderboardView,
     },
     {
