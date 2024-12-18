@@ -5,6 +5,7 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 
 import 'vue-toast-notification/dist/theme-sugar.css';
+import AppFooter from './components/AppFooter.vue';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FS_API_KEY,
@@ -25,6 +26,7 @@ getAnalytics(app);
   <main>
     <AppHeader />
     <RouterView class="view" />
+    <AppFooter />
   </main>
 </template>
 

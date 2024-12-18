@@ -3,10 +3,19 @@ import Button from '@/components/Button.vue';
 import ArrowOutIcon from '@/components/icons/ArrowOutIcon.vue';
 import ArrowRightIcon from '@/components/icons/ArrowRightIcon.vue';
 
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+
 import type { Project } from '@/types';
 
 import { allProjects } from '@/scripts/data';
 import { onMounted, ref } from 'vue';
+
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Navigation, Pagination } from 'swiper/modules';
+
+const modules = [Navigation, Pagination];
 
 const projects = ref<Project[]>([]);
 
@@ -144,6 +153,75 @@ onMounted(async () => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="testimonies">
+        <div class="testimony_title">
+          <p>What people say about us</p>
+        </div>
+
+        <Swiper :modules="modules" :slides-per-view="3.2" :space-between="30" navigation>
+          <SwiperSlide>
+            <div class="testimony">
+              <p class="text">We repurposed industrial soot into sustainable ink, thanks to the changemakers we met
+                here!
+              </p>
+              <div class="user">
+                <img src="../assets/images/testimony_image_1.png" alt="">
+                <div class="user_name">
+                  <p>Alexander</p>
+                  <p>Los Angeles</p>
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
+          <SwiperSlide>
+            <div class="testimony">
+              <p class="text">I can see the impact of my donations in real-time. It’s fulfilling to know I’m making a
+                difference!
+              </p>
+              <div class="user">
+                <img src="../assets/images/testimony_image_2.png" alt="">
+                <div class="user_name">
+                  <p>Emily</p>
+                  <p>California</p>
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
+          <SwiperSlide>
+            <div class="testimony">
+              <p class="text">This platform helped me turn
+                plastic waste into building
+                materials and reach thousands.
+                Incredible support. </p>
+              <div class="user">
+                <img src="../assets/images/testimony_image_3.png" alt="">
+                <div class="user_name">
+                  <p>Cheng</p>
+                  <p>China</p>
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
+          <SwiperSlide>
+            <div class="testimony">
+              <p class="text">Our small recycling project gained global visibility and funding to expand. Amazing
+                opportunities. </p>
+              <div class="user">
+                <img src="../assets/images/testimony_image_4.png" alt="">
+                <div class="user_name">
+                  <p>Rebecca</p>
+                  <p>Ghana</p>
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
+        </Swiper>
+      </div>
+
+      <div class="footer">
+
       </div>
     </div>
   </section>
@@ -433,5 +511,55 @@ onMounted(async () => {
   border-radius: 50px;
   text-wrap: nowrap;
   padding: 10px 16px;
+}
+
+.testimonies {
+  margin-top: 160px;
+}
+
+.testimony_title p {
+  color: #FFF;
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 40px;
+}
+
+.testimony {
+  width: 398px;
+  border-radius: 15px;
+  background: #061B0E;
+  padding: 30px;
+  cursor: pointer;
+}
+
+.testimony .text {
+  color: #ABB0A8;
+  font-size: 20px;
+  font-weight: 500;
+  min-height: 140px;
+}
+
+.testimony .user {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.testimony img {
+  width: 100px;
+  height: 100px;
+}
+
+.testimony .user_name p:first-child {
+  color: #F8F8F8;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.testimony .user_name p:last-child {
+  color: #5AA427;
+  font-size: 24px;
+  font-weight: 500;
 }
 </style>
