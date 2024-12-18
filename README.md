@@ -17,3 +17,20 @@ The platform enables green innovation funding in $HBAR, ensuring that all contri
 #### Leaderboard for Social Impact
 
 Users can track and compare their impact on sustainability with others, including carbon offset efforts, waste recycling, and biodegradable solutions via a public leaderboard.
+
+#### Investor and Changemaker Connections
+
+The platform allows investors to connect with changemakers working on climate-positive solutions, facilitating easy collaboration and funding.
+
+#### Sustainabilty
+1. Transaction Fees
+
+We deduct a small percentage (5% ~ 8%) on each transaction (e.g., buying, selling, or retiring carbon credits).
+
+2. Listing Fees
+
+We charge project owners or innovators a fee to list their carbon credits, waste-to-value projects, or green initiatives on the platform.
+
+3. Partnership with Coporations
+
+Collaborate with companies looking to meet their sustainability goals by helping them identify, fund, or integrate green innovations, and charge a consulting or partnership fee.
