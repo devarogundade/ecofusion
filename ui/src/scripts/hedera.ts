@@ -1,3 +1,4 @@
+import { Reserve } from "./../../../smart_contracts/typechain-types/Reserve";
 import {
   Hbar,
   type ContractFunctionResult,
@@ -45,9 +46,8 @@ export const initReserve = async (
 };
 
 export const trade = async (
-  resource: ContractId | string,
-  price: number,
-  units: number
+  reserve: ContractId | string,
+  price: number
 ): Promise<{
   hash: TransactionId | null;
   result: ContractFunctionResult | null;
@@ -59,20 +59,16 @@ export const trade = async (
       new ContractFunctionParameterBuilder()
         .addParam({
           type: "address",
-          name: "resource",
-          value: resource,
+          name: "reserve",
+          value: reserve,
         })
         .addParam({
           type: "uint256",
           name: "price",
           value: price,
-        })
-        .addParam({
-          type: "uint256",
-          name: "units",
-          value: units,
         }),
-      GAS_LIMIT_CONTRACT_CALL
+      GAS_LIMIT_CONTRACT_CALL,
+      new Hbar(price)
     );
   } catch (error) {
     return {

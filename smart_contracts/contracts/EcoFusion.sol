@@ -16,13 +16,13 @@ contract EcoFusion is TradeCenter {
     }
 
     function trade(
-        address resource,
-        uint256 price,
-        uint256 units
+        address reserve,
+        uint256 price
     ) external payable returns (uint256) {
         require(_isSafeArtisan(msg.sender));
 
-        (, uint256 amount) = _trade(msg.sender, resource, price, units);
+        (, uint256 amount) = _trade(msg.sender, reserve, price);
+
         return amount;
     }
 

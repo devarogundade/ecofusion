@@ -49,7 +49,7 @@ contract Resource is
         ); // Contract auto-renews the token
 
         (int response, address createdToken) = HederaTokenService
-            .createFungibleToken(hederaToken, 1_000_000, decimals);
+            .createFungibleToken(hederaToken, 0, decimals);
 
         if (response != HederaResponseCodes.SUCCESS) {
             revert("Failed to create fungible token");

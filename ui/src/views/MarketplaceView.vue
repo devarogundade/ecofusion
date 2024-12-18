@@ -72,9 +72,9 @@ const mint = async () => {
 
     minting.value = true;
 
-    // await walletConnectWallet.associateTokens(
-    //     [TokenId.fromString(selectedResource.value.token)]
-    // );
+    await walletConnectWallet.associateTokens(
+        [TokenId.fromString(selectedResource.value.token)]
+    );
 
     const { hash } = await mintToken(
         ContractId.fromEvmAddress(0, 0, selectedResource.value.address),
@@ -116,16 +116,9 @@ const buy = async () => {
         [TokenId.fromString(selectedResource.value.token)]
     );
 
-    await walletConnectWallet.approveToken(
-        selectedResource.value.token,
-        ecoFusionId,
-        form.value.units
-    );
-
-    const hash = await trade(
-        walletConnect.state.accountId,
-        selectedReserve.value.price,
-        form.value.units
+    const { hash } = await trade(
+        selectedReserve.value.address,
+        form.value.units * selectedReserve.value.price
     );
 
     if (hash) {
@@ -134,7 +127,7 @@ const buy = async () => {
             account: walletConnect.state.accountId,
             type: true,
             reserve: selectedReserve.value.address,
-            price: selectedReserve.value.price,
+            price: selectedReserve.value.price * form.value.units,
             uints: form.value.units,
             date: new Date(Date.now())
         });
@@ -147,12 +140,13 @@ const buy = async () => {
         form.value.units = 0;
 
         toast.success('Trade successful!');
+
+        transactions.value = await allTransactions(selectedReserve.value.address);
     } else {
         toast.error('Something went wrong');
     }
 
     buying.value = false;
-
 };
 
 const sell = async () => {
@@ -178,12 +172,12 @@ const sell = async () => {
 
     selling.value = true;
 
-    // await walletConnectWallet.associateTokens(
-    //     [
-    //         TokenId.fromString(selectedResource.value.token),
-    //         TokenId.fromSolidityAddress(selectedReserve.value.lpToken)
-    //     ]
-    // );
+    await walletConnectWallet.associateTokens(
+        [
+            TokenId.fromString(selectedResource.value.token),
+            TokenId.fromSolidityAddress(selectedReserve.value.lpToken)
+        ]
+    );
 
     await walletConnectWallet.approveToken(
         TokenId.fromString(selectedResource.value.token),
@@ -191,7 +185,7 @@ const sell = async () => {
         form.value.units * 10 ** 2
     );
 
-    const hash = await addLiquidity(
+    const { hash } = await addLiquidity(
         // `0x${selectedReserve.value.address}`,
         ContractId.fromString("0.0.5276381"),
         form.value.units * 10 ** 2
@@ -203,7 +197,7 @@ const sell = async () => {
             account: walletConnect.state.accountId,
             type: false,
             reserve: selectedReserve.value.address,
-            price: selectedReserve.value.price,
+            price: selectedReserve.value.price * form.value.units,
             uints: form.value.units,
             date: new Date(Date.now())
         });
@@ -216,6 +210,8 @@ const sell = async () => {
         form.value.units = 0;
 
         toast.success('Liquidity added successful!');
+
+        transactions.value = await allTransactions(selectedReserve.value.address);
     } else {
         toast.error('Something went wrong');
     }
@@ -238,9 +234,9 @@ onMounted(async () => {
     loading.value = false;
 });
 
-watch(selectedResource, async () => {
-    if (selectedResource.value) {
-        transactions.value = await allTransactions(selectedResource.value.address);
+watch(selectedReserve, async () => {
+    if (selectedReserve.value) {
+        transactions.value = await allTransactions(selectedReserve.value.address);
     }
 });
 </script>
@@ -295,7 +291,7 @@ watch(selectedResource, async () => {
                                         <tr>
                                             <td>Transaction</td>
                                             <td>Amount</td>
-                                            <td>Spent</td>
+                                            <td>Price</td>
                                             <td>Type</td>
                                             <td>Date</td>
                                             <td></td>
@@ -306,7 +302,7 @@ watch(selectedResource, async () => {
                                             <td>
                                                 <div>
                                                     <img :src="selectedResource.image" :alt="selectedResource.name">
-                                                    <p>{{ selectedResource.name }}</p>
+                                                    <p>{{ selectedReserve.name }}</p>
                                                 </div>
                                             </td>
                                             <td>{{ transaction.uints }}Kg</td>
@@ -318,8 +314,8 @@ watch(selectedResource, async () => {
                                                 day: "numeric"
                                             }).format(transaction.date) }}</td>
                                             <td>
-                                                <a
-                                                    :href="`https://testnet.hashscan.io/transactions/${transaction.hash}`">View
+                                                <a target="_blank"
+                                                    :href="`https://hashscan.io/testnet/transaction/${transaction.hash}`">View
                                                 </a>
                                             </td>
                                         </tr>
@@ -537,12 +533,16 @@ tbody td {
     font-weight: 600;
 }
 
+option {
+    color: #06190B;
+}
 
 .trade_action {
     border-radius: 15px;
     border: 1px solid #1D2616;
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
     padding: 20px;
+    height: fit-content;
 }
 
 .swap {
@@ -641,5 +641,11 @@ tbody td {
     font-size: 12px;
     font-weight: 600;
     margin-top: 10px;
+}
+
+td a {
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 600;
 }
 </style>

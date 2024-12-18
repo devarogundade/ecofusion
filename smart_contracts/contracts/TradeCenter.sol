@@ -47,21 +47,19 @@ abstract contract TradeCenter is Ownable, HederaTokenService {
 
     function _trade(
         address artisan,
-        address resource,
-        uint256 price,
-        uint256 units
+        address reserve,
+        uint256 price
     ) internal returns (address, uint256) {
-        address reserve = _getReserve(resource, price);
-
+        uint256 units = price / IReserve(reserve).price();
         uint256 reservedUnits = IReserve(reserve).reservedUnits();
+
         require(units <= reservedUnits, "Insufficient liquidity");
 
         IReserve(reserve).withdraw(units, artisan);
 
-        uint256 amount = units * IReserve(reserve).price();
-        IReserve(reserve).deposit{value: amount}();
+        IReserve(reserve).deposit{value: price}();
 
-        return (reserve, amount);
+        return (reserve, price);
     }
 
     function _createOrGetReserve(

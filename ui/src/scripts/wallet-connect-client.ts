@@ -72,14 +72,18 @@ class WalletConnectWallet implements WalletInterface {
   }
 
   async transferHBAR(toAddress: AccountId | string, amount: number) {
-    const transferHBARTransaction = new TransferTransaction()
-      .addHbarTransfer(this.getAccountId(), -amount)
-      .addHbarTransfer(toAddress, amount);
+    try {
+      const transferHBARTransaction = new TransferTransaction()
+        .addHbarTransfer(this.getAccountId(), -amount)
+        .addHbarTransfer(toAddress, amount);
 
-    const signer = this.getSigner();
-    await transferHBARTransaction.freezeWithSigner(signer);
-    const txResult = await transferHBARTransaction.executeWithSigner(signer);
-    return txResult ? txResult.transactionId : null;
+      const signer = this.getSigner();
+      await transferHBARTransaction.freezeWithSigner(signer);
+      const txResult = await transferHBARTransaction.executeWithSigner(signer);
+      return txResult ? txResult.transactionId : null;
+    } catch (error) {
+      return null;
+    }
   }
 
   async transferFungibleToken(
@@ -87,14 +91,18 @@ class WalletConnectWallet implements WalletInterface {
     tokenId: TokenId | string,
     amount: number
   ) {
-    const transferTokenTransaction = new TransferTransaction()
-      .addTokenTransfer(tokenId, this.getAccountId(), -amount)
-      .addTokenTransfer(tokenId, toAddress.toString(), amount);
+    try {
+      const transferTokenTransaction = new TransferTransaction()
+        .addTokenTransfer(tokenId, this.getAccountId(), -amount)
+        .addTokenTransfer(tokenId, toAddress.toString(), amount);
 
-    const signer = this.getSigner();
-    await transferTokenTransaction.freezeWithSigner(signer);
-    const txResult = await transferTokenTransaction.executeWithSigner(signer);
-    return txResult ? txResult.transactionId : null;
+      const signer = this.getSigner();
+      await transferTokenTransaction.freezeWithSigner(signer);
+      const txResult = await transferTokenTransaction.executeWithSigner(signer);
+      return txResult ? txResult.transactionId : null;
+    } catch (error) {
+      return null;
+    }
   }
 
   async transferNonFungibleToken(
@@ -102,17 +110,21 @@ class WalletConnectWallet implements WalletInterface {
     tokenId: TokenId | string,
     serialNumber: number
   ) {
-    const transferTokenTransaction = new TransferTransaction().addNftTransfer(
-      tokenId,
-      serialNumber,
-      this.getAccountId(),
-      toAddress
-    );
+    try {
+      const transferTokenTransaction = new TransferTransaction().addNftTransfer(
+        tokenId,
+        serialNumber,
+        this.getAccountId(),
+        toAddress
+      );
 
-    const signer = this.getSigner();
-    await transferTokenTransaction.freezeWithSigner(signer);
-    const txResult = await transferTokenTransaction.executeWithSigner(signer);
-    return txResult ? txResult.transactionId : null;
+      const signer = this.getSigner();
+      await transferTokenTransaction.freezeWithSigner(signer);
+      const txResult = await transferTokenTransaction.executeWithSigner(signer);
+      return txResult ? txResult.transactionId : null;
+    } catch (error) {
+      return null;
+    }
   }
 
   async approveToken(
@@ -120,40 +132,56 @@ class WalletConnectWallet implements WalletInterface {
     spender: AccountId | ContractId | string,
     amount: number
   ) {
-    const approveTokenTransaction =
-      new AccountAllowanceApproveTransaction().approveTokenAllowance(
-        tokenId,
-        this.getAccountId(),
-        spender,
-        amount
-      );
+    try {
+      const approveTokenTransaction =
+        new AccountAllowanceApproveTransaction().approveTokenAllowance(
+          tokenId,
+          this.getAccountId(),
+          spender,
+          amount
+        );
 
-    const signer = this.getSigner();
-    await approveTokenTransaction.freezeWithSigner(signer);
-    const txResult = await approveTokenTransaction.executeWithSigner(signer);
-    return txResult ? txResult.transactionId : null;
+      const signer = this.getSigner();
+      await approveTokenTransaction.freezeWithSigner(signer);
+      const txResult = await approveTokenTransaction.executeWithSigner(signer);
+      return txResult ? txResult.transactionId : null;
+    } catch (error) {
+      return null;
+    }
   }
 
   async associateToken(tokenId: TokenId | string) {
-    const associateTokenTransaction = new TokenAssociateTransaction()
-      .setAccountId(this.getAccountId())
-      .setTokenIds([tokenId]);
+    try {
+      const associateTokenTransaction = new TokenAssociateTransaction()
+        .setAccountId(this.getAccountId())
+        .setTokenIds([tokenId]);
 
-    const signer = this.getSigner();
-    await associateTokenTransaction.freezeWithSigner(signer);
-    const txResult = await associateTokenTransaction.executeWithSigner(signer);
-    return txResult ? txResult.transactionId : null;
+      const signer = this.getSigner();
+      await associateTokenTransaction.freezeWithSigner(signer);
+      const txResult = await associateTokenTransaction.executeWithSigner(
+        signer
+      );
+      return txResult ? txResult.transactionId : null;
+    } catch (error) {
+      return null;
+    }
   }
 
   async associateTokens(tokenIds: TokenId[] | string[]) {
-    const associateTokenTransaction = new TokenAssociateTransaction()
-      .setAccountId(this.getAccountId())
-      .setTokenIds(tokenIds);
+    try {
+      const associateTokenTransaction = new TokenAssociateTransaction()
+        .setAccountId(this.getAccountId())
+        .setTokenIds(tokenIds);
 
-    const signer = this.getSigner();
-    await associateTokenTransaction.freezeWithSigner(signer);
-    const txResult = await associateTokenTransaction.executeWithSigner(signer);
-    return txResult ? txResult.transactionId : null;
+      const signer = this.getSigner();
+      await associateTokenTransaction.freezeWithSigner(signer);
+      const txResult = await associateTokenTransaction.executeWithSigner(
+        signer
+      );
+      return txResult ? txResult.transactionId : null;
+    } catch (error) {
+      return null;
+    }
   }
 
   async executeContractFunction(

@@ -152,16 +152,16 @@ export async function allProjects(): Promise<Project[]> {
   }
 }
 
-export async function allTransactions(
-  resource: string
-): Promise<Transaction[]> {
+export async function allTransactions(reserve: string): Promise<Transaction[]> {
   try {
     const ref = collection(db, TRANSACTION_COLLECTION);
 
-    const q = query(ref, where("resource", "==", resource));
+    const q = query(ref, where("reserve", "==", reserve));
     const querySnapshot = await getDocs(q);
 
     const transactions: Transaction[] = [];
+
+    console.log("transactions", transactions);
 
     querySnapshot.forEach((doc) => {
       transactions.push(doc.data() as Transaction);

@@ -60,8 +60,8 @@ const createReserve = async () => {
             price: form.value.price,
             resource: form.value.resource,
             units: 0,
-            address: result?.getAddress(0),
-            lpToken: result?.getAddress(1)
+            address: `0x${result.getAddress(0)}`,
+            lpToken: `0x${result.getAddress(1)}`
         });
 
         toast.success('Resource created');
